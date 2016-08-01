@@ -1,0 +1,47 @@
+syntax: glob
+#-- OS Junk files
+[Tt]humbs.db
+
+#-- Mercurial junk files
+*.orig
+
+#-- VIM junk files
+*.swp
+*~
+
+#-- Visual Studio 
+*.sln.cache
+*.suo
+*proj.user
+*.rdl.data
+.vs/
+obj/
+[Bb]in/
+[Dd]ebug/
+[Rr]elease/
+packages/
+
+#-- Visual Studio C++ sln files
+*.ncb
+*.aps
+*.vcproj*user
+
+#-- ReSharper
+_ReSharper.*/
+*.[Rr]e[Ss]harper
+*.[Rr]e[Ss]harper.user
+*.resharperoptions
+*.DotSettings.user
+
+#-- fake/nant build output
+.fake
+build/
+build.txt
+
+#-- CaseMax specific directories that are copied down
+external-bin/
+
+#-- files that are created running certain bat files
+*bat.log
+*log.txt
+

@@ -12,7 +12,7 @@ namespace PRS.CMS.AuthServer.Models
     {
         public static IEnumerable<Client> Clients()
         {
-            var proj1Client = new Client
+            var mvcWebAppClient = new Client
             {
                 Enabled = true,
                 ClientName = "PRS.CMS.MvcProj1 Web App",
@@ -24,7 +24,33 @@ namespace PRS.CMS.AuthServer.Models
                 }
             };
 
-            return new[] {proj1Client};
+            var fatClient = new Client
+            {
+                Enabled = true,
+                Flow = Flows.ResourceOwner,
+                ClientName = "SimpleClientApp",
+                ClientId = "SimpleClientApp",
+                ClientSecrets = new List<Secret>
+                {
+                    new Secret("secret".Sha256())
+                },
+                AllowedScopes = new List<string>
+                {
+                    StandardScopes.OpenId.Name,
+                    StandardScopes.Profile.Name,
+                    StandardScopes.Email.Name,
+                    StandardScopes.Roles.Name,
+                    StandardScopes.OfflineAccess.Name
+                },
+                AccessTokenType = AccessTokenType.Jwt,
+                AccessTokenLifetime = 3600,
+
+                IncludeJwtId = true,
+                IdentityTokenLifetime = 3600
+
+            };
+
+            return new[] {mvcWebAppClient, fatClient};
         }
 
         public static IEnumerable<Scope> Scopes()
@@ -35,7 +61,7 @@ namespace PRS.CMS.AuthServer.Models
                 StandardScopes.Profile,
                 StandardScopes.Email,
                 StandardScopes.Roles,
-                StandardScopes.OfflineAccess
+                StandardScopes.OfflineAccess,
             };
         } 
 
