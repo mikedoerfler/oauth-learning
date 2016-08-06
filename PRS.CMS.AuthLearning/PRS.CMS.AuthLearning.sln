@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRS.CMS.MvcProj1", "PRS.CMS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimpleClientApp", "SimpleClientApp\SimpleClientApp.csproj", "{9E687DDD-0582-4CBA-8DC9-907C858708BD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRS.CMS.AuthLearning.WsFedServer", "PRS.CMS.AuthLearning.WsFedServer\PRS.CMS.AuthLearning.WsFedServer.csproj", "{2950360D-23E1-450C-A08B-54C01FE55DD2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PRS.CMS.AuthLearning.CustomSTS", "PRS.CMS.AuthLearning.CustomSTS\PRS.CMS.AuthLearning.CustomSTS.csproj", "{8DC68D8F-ADC6-4B4C-8F5A-3997E88E8544}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{9E687DDD-0582-4CBA-8DC9-907C858708BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E687DDD-0582-4CBA-8DC9-907C858708BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E687DDD-0582-4CBA-8DC9-907C858708BD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2950360D-23E1-450C-A08B-54C01FE55DD2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2950360D-23E1-450C-A08B-54C01FE55DD2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2950360D-23E1-450C-A08B-54C01FE55DD2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2950360D-23E1-450C-A08B-54C01FE55DD2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DC68D8F-ADC6-4B4C-8F5A-3997E88E8544}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DC68D8F-ADC6-4B4C-8F5A-3997E88E8544}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DC68D8F-ADC6-4B4C-8F5A-3997E88E8544}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DC68D8F-ADC6-4B4C-8F5A-3997E88E8544}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

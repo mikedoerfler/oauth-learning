@@ -34,14 +34,7 @@ namespace PRS.CMS.AuthServer.Models
                 {
                     new Secret("secret".Sha256())
                 },
-                AllowedScopes = new List<string>
-                {
-                    StandardScopes.OpenId.Name,
-                    StandardScopes.Profile.Name,
-                    StandardScopes.Email.Name,
-                    StandardScopes.Roles.Name,
-                    StandardScopes.OfflineAccess.Name
-                },
+                AllowAccessToAllScopes = true,
                 AccessTokenType = AccessTokenType.Jwt,
                 AccessTokenLifetime = 3600,
 
@@ -55,6 +48,11 @@ namespace PRS.CMS.AuthServer.Models
 
         public static IEnumerable<Scope> Scopes()
         {
+            /*return new [] {
+                new Scope(){
+                    
+                }
+            }*/
             return new[]
             {
                 StandardScopes.OpenId,

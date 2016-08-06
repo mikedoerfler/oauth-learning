@@ -15,7 +15,8 @@ namespace PRS.CMS.MvcProj1
 
             app.UseOpenIdConnectAuthentication(new OpenIdConnectAuthenticationOptions()
             {
-                Authority = "https://localhost:44300/AuthServer/"
+                Authority = "https://localhost:44300/AuthServer/",
+                
             });
         }
     }
