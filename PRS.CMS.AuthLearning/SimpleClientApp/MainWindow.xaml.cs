@@ -1,5 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.IdentityModel.Tokens;
+using System.Net.Http;
 using IdentityModel.Client;
 
 namespace SimpleClientApp
@@ -21,7 +23,6 @@ namespace SimpleClientApp
             var client = new TokenClient(connectRootUri + "/token",
                 "SimpleClientApp",
                 "secret");
-
             
             var userName = UserNameTextBox.Text;
             var password = PasswordTextBox.Text;
@@ -34,16 +35,43 @@ namespace SimpleClientApp
             var tokenResponse = client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile email offline_access").Result;
             tokenTextBlock.Text = tokenResponse.AccessToken;
 
+            DisplayTokenResponse(tokenResponse, connectRootUri);
+        }
+
+        private void Button_Click_1(object sender, RoutedEventArgs e)
+        {
+
+            var handler = new HttpClientHandler
+            {
+                UseDefaultCredentials = true
+            };
+            var connectRootUri = "https://localhost:44302/windows";
+
+            var client = new TokenClient(connectRootUri + "/token", handler)
+            {
+                ClientId = "SimpleClientApp",
+                ClientSecret = "secret"
+            };
+
+            var tokenResponse = client.RequestCustomGrantAsync("windows").Result;
+
+            DisplayTokenResponse(tokenResponse, connectRootUri, handler);
+        }
+
+        private static void DisplayTokenResponse(TokenResponse tokenResponse, string connectRootUri, HttpClientHandler handler = null)
+        {
             // reads the base64 encoded content in the AccessToken into an actual SecurityToken
-            var securityToken = new JwtSecurityTokenHandler().ReadToken(tokenResponse.AccessToken);
+            var accessToken = new JwtSecurityTokenHandler().ReadToken(tokenResponse.AccessToken);
 
             // need to get the claims for the user because the Token doesn't contain any user info other than
             // giving us the ability to access APIs as that user
-            var userInfoClient = new UserInfoClient(new System.Uri(connectRootUri + "/userinfo"), tokenResponse.AccessToken);
+            var userInfoClient = new UserInfoClient(new Uri(connectRootUri.Replace("windows", "connect") + "/userinfo"), tokenResponse.AccessToken);
+
             var userInfoResponse = userInfoClient.GetAsync().Result;
 
             // can look through Claims to see what info is in the Token returned
             var claims = userInfoResponse.Claims;
+            
         }
     }
 }
