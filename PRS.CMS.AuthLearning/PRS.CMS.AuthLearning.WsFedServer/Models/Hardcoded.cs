@@ -41,18 +41,13 @@ namespace PRS.CMS.AuthLearning.WsFedServer.Models
 
         public static IEnumerable<Scope> Scopes()
         {
-            /*return new [] {
-                new Scope(){
-                    
-                }
-            }*/
             return new[]
             {
                 StandardScopes.OpenId,
                 StandardScopes.Profile,
                 StandardScopes.Email,
                 StandardScopes.Roles,
-                StandardScopes.OfflineAccess,
+                StandardScopes.OfflineAccess
             };
         } 
 

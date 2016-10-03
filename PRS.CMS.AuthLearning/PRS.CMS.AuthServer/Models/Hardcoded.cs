@@ -69,7 +69,7 @@ namespace PRS.CMS.AuthServer.Models
             {
                 Username = "bob",
                 Password = "123",
-                Subject = "1",
+                Subject = "InMemoryUser#1",
                 Claims = new[]
                 {
                     new Claim(Constants.ClaimTypes.GivenName, "Bob"),

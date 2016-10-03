@@ -12,26 +12,30 @@ namespace PRS.CMS.AuthLearning.WsFedServer.Models
 {
     public class ExternalRegistrationUserService : UserServiceBase
     {
-        public class CustomUser
-        {
-            public string Subject { get; set; }
-            public string Provider { get; set; }
-            public string ProviderID { get; set; }
-            public List<Claim> Claims { get; set; }
-        }
+        public static readonly List<CustomUser> Users = new List<CustomUser>();
 
-        public static List<CustomUser> Users = new List<CustomUser>();
+        public override Task PreAuthenticateAsync(PreAuthenticationContext context)
+        {
+            if (context.SignInMessage.ClientId == "SimpleClientApp")
+            {
+                context.SignInMessage.IdP = "windows";
+            }
+            return base.PreAuthenticateAsync(context);
+        }
 
         public override Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
         {
             // look for the user in our local identity system from the external identifiers
             var user = Users.SingleOrDefault(x => x.Provider == context.ExternalIdentity.Provider && x.ProviderID == context.ExternalIdentity.ProviderId);
-            string name = "Unknown";
+            var name = "Unknown";
             if (user == null)
             {
                 // new user, so add them here
                 var nameClaim = context.ExternalIdentity.Claims.First(x => x.Type == Constants.ClaimTypes.Name);
-                if (nameClaim != null) name = nameClaim.Value;
+                if (nameClaim != null)
+                {
+                    name = nameClaim.Value;
+                }
 
                 user = new CustomUser
                 {

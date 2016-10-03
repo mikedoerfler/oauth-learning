@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.IdentityModel.Tokens;
+using System.Net;
 using System.Net.Http;
 using IdentityModel.Client;
 
@@ -38,13 +39,15 @@ namespace SimpleClientApp
             DisplayTokenResponse(tokenResponse, connectRootUri);
         }
 
-        private void Button_Click_1(object sender, RoutedEventArgs e)
+        private void Button_Click_WsFedServer(object sender, RoutedEventArgs e)
         {
+            ServicePointManager.ServerCertificateValidationCallback = (o, certificate, chain, errors) => true;
 
             var handler = new HttpClientHandler
             {
-                UseDefaultCredentials = true
+                UseDefaultCredentials = true,
             };
+            //PRS.CMS.AuthLearning.WsFedServer
             var connectRootUri = "https://localhost:44302/windows";
 
             var client = new TokenClient(connectRootUri + "/token", handler)
@@ -53,7 +56,27 @@ namespace SimpleClientApp
                 ClientSecret = "secret"
             };
 
-            var tokenResponse = client.RequestCustomGrantAsync("windows").Result;
+            var tokenResponse = client.RequestCustomGrantAsync("windows", "openid profile offline_access").Result;
+
+            DisplayTokenResponse(tokenResponse, connectRootUri, handler);
+        }
+
+        private void Button_Click_WinAuth(object sender, RoutedEventArgs e)
+        {
+            var handler = new HttpClientHandler
+            {
+                UseDefaultCredentials = true
+            };
+            //PRS.CMS.AuthLearning.WinAuth
+            var connectRootUri = "http://localhost:26712/";
+
+            var client = new TokenClient(connectRootUri + "/token", handler)
+            {
+                ClientId = "SimpleClientApp",
+                ClientSecret = "secret"
+            };
+
+            var tokenResponse = client.RequestCustomGrantAsync("windows", "openid offline").Result;
 
             DisplayTokenResponse(tokenResponse, connectRootUri, handler);
         }
@@ -65,7 +88,9 @@ namespace SimpleClientApp
 
             // need to get the claims for the user because the Token doesn't contain any user info other than
             // giving us the ability to access APIs as that user
-            var userInfoClient = new UserInfoClient(new Uri(connectRootUri.Replace("windows", "connect") + "/userinfo"), tokenResponse.AccessToken);
+            var userInfoClient = handler == null
+                ? new UserInfoClient(new Uri(connectRootUri + "/userinfo"), tokenResponse.AccessToken)
+                : new UserInfoClient(new Uri(connectRootUri + "/userinfo"), tokenResponse.AccessToken, handler);
 
             var userInfoResponse = userInfoClient.GetAsync().Result;
 
@@ -73,5 +98,6 @@ namespace SimpleClientApp
             var claims = userInfoResponse.Claims;
             
         }
+
     }
 }

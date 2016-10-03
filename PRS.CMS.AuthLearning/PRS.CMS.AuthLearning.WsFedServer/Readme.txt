@@ -1,0 +1,1 @@
+﻿This combines WsFed and OAUTH2 into the same website.

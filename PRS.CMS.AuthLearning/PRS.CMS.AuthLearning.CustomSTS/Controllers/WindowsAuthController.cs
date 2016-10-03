@@ -2,36 +2,36 @@
 using System.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Security.Cryptography;
-using System.Text;
 using System.Web.Mvc;
 
 using IdentityModel.Tokens;
 
 namespace PRS.CMS.AuthLearning.CustomSTS.Controllers
 {
-    public class BasicAuthController : Controller
+    public class WindowsAuthController : Controller
     {
-        // GET: BasicAuth
-        public ActionResult Get(string user, string password, string format = "")
+        public ActionResult Get(string format = "")
         {
             var now = DateTime.UtcNow;
+
+            // this should be some secrect that the 
             var key = new byte[32];
             using (var crypto = RandomNumberGenerator.Create())
             {
                 crypto.GetBytes(key);
             }
 
-            var securityKey = Encoding.UTF8.GetBytes("notsecureatallyouidiot");
+            var principal = (ClaimsPrincipal)ControllerContext.HttpContext.User;
 
             var issuer = "https://casemaxsolutions.com/customsts";
             var audience = "http://www.example.com";
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user),  
-                new Claim("sub", user),  
-                new Claim("password", password),
+                new Claim(ClaimTypes.Name, principal.Identity.Name),
+                new Claim("sub", principal.Identity.Name),
                 new Claim("secretSecurityKey", Base64UrlEncoder.Encode(key))
             };
+
             var notBefore = now;
             var expires = now.AddMinutes(2);
 
@@ -51,5 +51,6 @@ namespace PRS.CMS.AuthLearning.CustomSTS.Controllers
             var jwt = tokenHandler.WriteToken(token);
             return Content(jwt);
         }
+        
     }
 }

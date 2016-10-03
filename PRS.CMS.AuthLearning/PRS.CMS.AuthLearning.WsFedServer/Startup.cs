@@ -12,6 +12,8 @@ namespace PRS.CMS.AuthLearning.WsFedServer
 {
     public class Startup
     {
+        private static readonly string RootUrl = "https://localhost:44302/";
+
         public void Configuration(IAppBuilder appBuilder)
         {
             appBuilder.Map("/windows", ConfigureWindowsTokenProvider);
@@ -27,7 +29,7 @@ namespace PRS.CMS.AuthLearning.WsFedServer
                 Factory = factory,
                 AuthenticationOptions = new AuthenticationOptions
                 {
-                    EnableLocalLogin = false,
+                    EnableLocalLogin = true,
                     IdentityProviders = ConfigureIdentityProviders
                 },
             };
@@ -41,9 +43,10 @@ namespace PRS.CMS.AuthLearning.WsFedServer
             {
                 IdpRealm = "urn:win",
                 SubjectType = SubjectType.Sid,
-                IdpReplyUrl = "https://localhost:44302/was",
-                PublicOrigin = "https://localhost:44302/",
+                IdpReplyUrl = RootUrl + "was",
+                PublicOrigin = RootUrl,
                 SigningCertificate = Hardcoded.Cert(),
+                EnableOAuth2Endpoint = true
             };
             app.UseWindowsAuthenticationService(options);
         }
@@ -56,7 +59,7 @@ namespace PRS.CMS.AuthLearning.WsFedServer
                 Caption = "Windows",
                 SignInAsAuthenticationType = signInAsType,
 
-                MetadataAddress = "https://localhost:44302/windows",
+                MetadataAddress = RootUrl + "windows",
                 Wtrealm = "urn:idsrv3"
             };
             app.UseWsFederationAuthentication(options);
