@@ -17,11 +17,17 @@ namespace PRS.CMS.AuthServer.Models
                 Enabled = true,
                 ClientName = "PRS.CMS.MvcProj1 Web App",
                 ClientId = "PRS.CMS.MvcProj1",
-                Flow = Flows.Implicit,
+                ClientSecrets = new List<Secret>
+                {
+                    new Secret("secret".Sha256())
+                },
+                Flow = Flows.Hybrid,
                 RedirectUris = new List<string>
                 {
-                    "https://localhost:44300/MvcProj1"
-                }
+                    "https://localhost:44301/",
+                    "http://localhost:6459/"
+                },
+                AllowAccessToAllScopes = true
             };
 
             var fatClient = new Client

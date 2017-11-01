@@ -28,7 +28,6 @@ namespace PRS.CMS.AuthServer
 
                 x.UseIdentityServer(options);
             });
-
         }
     }
 }

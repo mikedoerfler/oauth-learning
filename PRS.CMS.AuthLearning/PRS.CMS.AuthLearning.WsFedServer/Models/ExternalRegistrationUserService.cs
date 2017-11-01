@@ -42,7 +42,10 @@ namespace PRS.CMS.AuthLearning.WsFedServer.Models
                     Subject = Guid.NewGuid().ToString(),
                     Provider = context.ExternalIdentity.Provider,
                     ProviderID = context.ExternalIdentity.ProviderId,
-                    Claims = new List<Claim> { new Claim(Constants.ClaimTypes.Name, name) }
+                    Claims = new List<Claim>
+                    {
+                        new Claim(Constants.ClaimTypes.Name, name)
+                    }
                 };
                 Users.Add(user);
             }

@@ -19,7 +19,7 @@ namespace SimpleClientApp
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var connectRootUri = "https://localhost:44300/AuthServer/identity/connect";
+            var connectRootUri = "http://localhost:6159/AuthServer/identity/connect";
 
             var client = new TokenClient(connectRootUri + "/token",
                 "SimpleClientApp",
@@ -48,9 +48,9 @@ namespace SimpleClientApp
                 UseDefaultCredentials = true,
             };
             //PRS.CMS.AuthLearning.WsFedServer
-            var connectRootUri = "https://localhost:44302/windows";
+            var connectRootUri = "https://localhost:44302";
 
-            var client = new TokenClient(connectRootUri + "/token", handler)
+            var client = new TokenClient(connectRootUri + "/windows/token", handler)
             {
                 ClientId = "SimpleClientApp",
                 ClientSecret = "secret"
@@ -68,21 +68,26 @@ namespace SimpleClientApp
                 UseDefaultCredentials = true
             };
             //PRS.CMS.AuthLearning.WinAuth
-            var connectRootUri = "http://localhost:26712/";
+            var connectRootUri = "http://localhost:26712/token";
 
-            var client = new TokenClient(connectRootUri + "/token", handler)
+            var client = new TokenClient(connectRootUri, handler)
             {
                 ClientId = "SimpleClientApp",
                 ClientSecret = "secret"
             };
 
-            var tokenResponse = client.RequestCustomGrantAsync("windows", "openid offline").Result;
+            var tokenResponse = client.RequestCustomGrantAsync("windows", "openid profile offline_access").Result;
 
             DisplayTokenResponse(tokenResponse, connectRootUri, handler);
         }
 
         private static void DisplayTokenResponse(TokenResponse tokenResponse, string connectRootUri, HttpClientHandler handler = null)
         {
+            if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
+            {
+                return;
+            }
+
             // reads the base64 encoded content in the AccessToken into an actual SecurityToken
             var accessToken = new JwtSecurityTokenHandler().ReadToken(tokenResponse.AccessToken);
 

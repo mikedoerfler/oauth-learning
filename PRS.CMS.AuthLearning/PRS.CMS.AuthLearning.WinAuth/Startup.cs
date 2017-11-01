@@ -3,9 +3,8 @@ using System.Security.Cryptography.X509Certificates;
 using IdentityServer.WindowsAuthentication.Configuration;
 using Microsoft.Owin;
 using Owin;
-using PRS.CMS.AuthLearning.WinAuth;
 
-[assembly: OwinStartup(typeof(Startup))]
+[assembly: OwinStartup(typeof(PRS.CMS.AuthLearning.WinAuth.Startup))]
 
 namespace PRS.CMS.AuthLearning.WinAuth
 {

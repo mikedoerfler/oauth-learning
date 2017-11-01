@@ -31,7 +31,7 @@ namespace PRS.CMS.AuthLearning.WsFedServer
                 {
                     EnableLocalLogin = true,
                     IdentityProviders = ConfigureIdentityProviders
-                },
+                }
             };
 
             appBuilder.UseIdentityServer(options);
@@ -46,7 +46,8 @@ namespace PRS.CMS.AuthLearning.WsFedServer
                 IdpReplyUrl = RootUrl + "was",
                 PublicOrigin = RootUrl,
                 SigningCertificate = Hardcoded.Cert(),
-                EnableOAuth2Endpoint = true
+                EnableOAuth2Endpoint = true,
+                EmitWindowsAccountNameAsName = true
             };
             app.UseWindowsAuthenticationService(options);
         }
@@ -58,7 +59,6 @@ namespace PRS.CMS.AuthLearning.WsFedServer
                 AuthenticationType = "windows",
                 Caption = "Windows",
                 SignInAsAuthenticationType = signInAsType,
-
                 MetadataAddress = RootUrl + "windows",
                 Wtrealm = "urn:idsrv3"
             };
