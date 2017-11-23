@@ -60,7 +60,7 @@ namespace PRS.CMS.AuthServer.Models
                     new Secret("secret".Sha256())
                 },
                 AllowAccessToAllScopes = true,
-                AccessTokenType = AccessTokenType.Reference,
+                AccessTokenType = AccessTokenType.Jwt,
                 AccessTokenLifetime = 3600,
 
                 IncludeJwtId = true,

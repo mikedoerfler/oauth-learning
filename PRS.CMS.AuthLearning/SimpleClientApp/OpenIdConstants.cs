@@ -5,6 +5,7 @@ namespace SimpleClientApp
     public static class OpenIdConstants
     {
         public static string ClientId = "SimpleClientApp-Browser";
+        public static string Client2Id = "SimpleClientApp";
         public static string ClientSecret = "secret";
 
         public static Uri RootUri => new Uri("http://localhost:6159/AuthServer/identity/connect");

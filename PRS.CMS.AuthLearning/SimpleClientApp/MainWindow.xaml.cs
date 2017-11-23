@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
@@ -16,17 +17,19 @@ namespace SimpleClientApp
             InitializeComponent();
         }
 
-        private void Button_Click_Browser(object sender, RoutedEventArgs e)
+        private async void Button_Click_Browser(object sender, RoutedEventArgs e)
         {
             var proxy = new OpenIdClientProxy();
-            proxy.Authenticate();
+            var tokenResponse = await proxy.Authenticate();
+            tokenTextBlock.Text = tokenResponse.AccessToken;
+            DisplayTokenResponse(tokenResponse, OpenIdConstants.RootUri);
         }
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
             var connectRootUri = OpenIdConstants.RootUri;
 
-            var client = new TokenClient(connectRootUri + "/token", OpenIdConstants.ClientId, OpenIdConstants.ClientSecret);
+            var client = new TokenClient(connectRootUri + "/token", OpenIdConstants.Client2Id, OpenIdConstants.ClientSecret);
             
             var userName = UserNameTextBox.Text;
             var password = PasswordTextBox.Text;
@@ -39,7 +42,7 @@ namespace SimpleClientApp
             var tokenResponse = client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile email offline_access").Result;
             tokenTextBlock.Text = tokenResponse.AccessToken;
 
-            DisplayTokenResponse(tokenResponse, connectRootUri.ToString());
+            DisplayTokenResponse(tokenResponse, connectRootUri);
         }
 
         private void Button_Click_WsFedServer(object sender, RoutedEventArgs e)
@@ -51,11 +54,11 @@ namespace SimpleClientApp
                 UseDefaultCredentials = true,
             };
             //PRS.CMS.AuthLearning.WsFedServer
-            var connectRootUri = "https://localhost:44302";
+            var connectRootUri = new Uri("https://localhost:44302");
 
             var client = new TokenClient(connectRootUri + "/windows/token", handler)
             {
-                ClientId = OpenIdConstants.ClientId,
+                ClientId = OpenIdConstants.Client2Id,
                 ClientSecret = OpenIdConstants.ClientSecret
             };
 
@@ -71,11 +74,11 @@ namespace SimpleClientApp
                 UseDefaultCredentials = true
             };
             //PRS.CMS.AuthLearning.WinAuth
-            var connectRootUri = "http://localhost:26712/token";
+            var connectRootUri = new Uri("http://localhost:26712/token");
 
-            var client = new TokenClient(connectRootUri, handler)
+            var client = new TokenClient(connectRootUri.ToString(), handler)
             {
-                ClientId = OpenIdConstants.ClientId,
+                ClientId = OpenIdConstants.Client2Id,
                 ClientSecret = OpenIdConstants.ClientSecret
             };
 
@@ -84,7 +87,7 @@ namespace SimpleClientApp
             DisplayTokenResponse(tokenResponse, connectRootUri, handler);
         }
 
-        private static void DisplayTokenResponse(TokenResponse tokenResponse, string connectRootUri, HttpClientHandler handler = null)
+        private static void DisplayTokenResponse(TokenResponse tokenResponse, Uri connectRootUri, HttpClientHandler handler = null)
         {
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
