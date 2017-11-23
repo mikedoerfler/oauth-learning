@@ -1,6 +1,7 @@
 ﻿using IdentityServer3.Core.Configuration;
 using Owin;
 using PRS.CMS.AuthServer.Models;
+using Serilog;
 
 namespace PRS.CMS.AuthServer
 {
@@ -8,6 +9,11 @@ namespace PRS.CMS.AuthServer
     {
         public void Configuration(IAppBuilder app)
         {
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Trace()
+                .CreateLogger();
+
             app.Map("/identity", x =>
             {
                 var serviceFactory = new IdentityServerServiceFactory()

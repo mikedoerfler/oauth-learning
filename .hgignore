@@ -9,7 +9,7 @@ syntax: glob
 *.swp
 *~
 
-#-- Visual Studio 
+#-- Visual Studio
 *.sln.cache
 *.suo
 *proj.user
@@ -45,3 +45,4 @@ external-bin/
 *bat.log
 *log.txt
 
+PRS.CMS.AuthLearning/PRS.CMS.AuthServer/App_Data/Trace.log

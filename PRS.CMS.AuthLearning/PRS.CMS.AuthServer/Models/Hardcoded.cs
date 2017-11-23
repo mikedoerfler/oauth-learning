@@ -49,7 +49,31 @@ namespace PRS.CMS.AuthServer.Models
 
             };
 
-            return new[] {mvcWebAppClient, fatClient};
+            var fatClient2 = new Client
+            {
+                Enabled = true,
+                Flow = Flows.AuthorizationCode,
+                ClientName = "SimpleClientApp-Browser",
+                ClientId = "SimpleClientApp-Browser",
+                ClientSecrets = new List<Secret>
+                {
+                    new Secret("secret".Sha256())
+                },
+                AllowAccessToAllScopes = true,
+                AccessTokenType = AccessTokenType.Reference,
+                AccessTokenLifetime = 3600,
+
+                IncludeJwtId = true,
+                IdentityTokenLifetime = 3600,
+                RedirectUris = new List<string>
+                {
+                    "http://localhost:9549/",
+                    "http://127.0.0.1:9549/"
+                }
+                
+            };
+
+            return new[] {mvcWebAppClient, fatClient, fatClient2};
         }
 
         public static IEnumerable<Scope> Scopes()

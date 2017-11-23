@@ -1,6 +1,5 @@
-﻿using System;
-using System.Windows;
-using System.IdentityModel.Tokens;
+﻿using System.Windows;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
 using IdentityModel.Client;
@@ -17,13 +16,17 @@ namespace SimpleClientApp
             InitializeComponent();
         }
 
+        private void Button_Click_Browser(object sender, RoutedEventArgs e)
+        {
+            var proxy = new OpenIdClientProxy();
+            proxy.Authenticate();
+        }
+
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            var connectRootUri = "http://localhost:6159/AuthServer/identity/connect";
+            var connectRootUri = OpenIdConstants.RootUri;
 
-            var client = new TokenClient(connectRootUri + "/token",
-                "SimpleClientApp",
-                "secret");
+            var client = new TokenClient(connectRootUri + "/token", OpenIdConstants.ClientId, OpenIdConstants.ClientSecret);
             
             var userName = UserNameTextBox.Text;
             var password = PasswordTextBox.Text;
@@ -36,7 +39,7 @@ namespace SimpleClientApp
             var tokenResponse = client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile email offline_access").Result;
             tokenTextBlock.Text = tokenResponse.AccessToken;
 
-            DisplayTokenResponse(tokenResponse, connectRootUri);
+            DisplayTokenResponse(tokenResponse, connectRootUri.ToString());
         }
 
         private void Button_Click_WsFedServer(object sender, RoutedEventArgs e)
@@ -52,8 +55,8 @@ namespace SimpleClientApp
 
             var client = new TokenClient(connectRootUri + "/windows/token", handler)
             {
-                ClientId = "SimpleClientApp",
-                ClientSecret = "secret"
+                ClientId = OpenIdConstants.ClientId,
+                ClientSecret = OpenIdConstants.ClientSecret
             };
 
             var tokenResponse = client.RequestCustomGrantAsync("windows", "openid profile offline_access").Result;
@@ -72,8 +75,8 @@ namespace SimpleClientApp
 
             var client = new TokenClient(connectRootUri, handler)
             {
-                ClientId = "SimpleClientApp",
-                ClientSecret = "secret"
+                ClientId = OpenIdConstants.ClientId,
+                ClientSecret = OpenIdConstants.ClientSecret
             };
 
             var tokenResponse = client.RequestCustomGrantAsync("windows", "openid profile offline_access").Result;
@@ -94,15 +97,13 @@ namespace SimpleClientApp
             // need to get the claims for the user because the Token doesn't contain any user info other than
             // giving us the ability to access APIs as that user
             var userInfoClient = handler == null
-                ? new UserInfoClient(new Uri(connectRootUri + "/userinfo"), tokenResponse.AccessToken)
-                : new UserInfoClient(new Uri(connectRootUri + "/userinfo"), tokenResponse.AccessToken, handler);
+                ? new UserInfoClient(connectRootUri + "/userinfo")
+                : new UserInfoClient(connectRootUri + "/userinfo", handler);
 
-            var userInfoResponse = userInfoClient.GetAsync().Result;
+            var userInfoResponse = userInfoClient.GetAsync(tokenResponse.AccessToken).Result;
 
             // can look through Claims to see what info is in the Token returned
             var claims = userInfoResponse.Claims;
-            
         }
-
     }
 }
