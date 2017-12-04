@@ -23,8 +23,7 @@ namespace PRS.CMS.AuthServer
 
                 var options = new IdentityServerOptions
                 {
-                    SiteName = "CMSAuthServer Security Token Server",
-                    IssuerUri = "https://casemaxsolutions.com/sts/",
+                    SiteName = "CMSAuthServer IdentityServer",
                     // publicorigin would be important if behind a proxy  
                     //PublicOrigin = "",
                     SigningCertificate = Hardcoded.Cert(),

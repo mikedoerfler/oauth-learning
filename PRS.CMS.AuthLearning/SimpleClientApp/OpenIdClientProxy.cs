@@ -10,11 +10,17 @@ namespace SimpleClientApp
 {
     public class OpenIdClientProxy
     {
+        private readonly DiscoveryResponse _discoResponse;
         /*
          * based on sample from Google at
          * https://github.com/googlesamples/oauth-apps-for-windows/blob/master/OAuthConsoleApp/OAuthConsoleApp/Program.cs
          */
-          
+
+        public OpenIdClientProxy(DiscoveryResponse discoResponse)
+        {
+            _discoResponse = discoResponse;
+        }
+
         public static int GetRandomUnusedPort()
         {/*
             var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -35,7 +41,7 @@ namespace SimpleClientApp
             var redirectUri = $"http://{IPAddress.Loopback}:{GetRandomUnusedPort()}/";
             Console.WriteLine("redirect URI: " + redirectUri);
 
-            var request = new AuthorizeRequest(OpenIdConstants.AuthorizeEndpoint.ToString());
+            var request = new AuthorizeRequest(_discoResponse.AuthorizeEndpoint);
             var url = request.CreateAuthorizeUrl(
                 clientId: OpenIdConstants.ClientId,
                 responseType: OidcConstants.ResponseTypes.Code,
@@ -98,12 +104,12 @@ namespace SimpleClientApp
             }
             Console.WriteLine("Authorization code: " + code);
 
-            var tokenEndpointClient = new TokenClient(OpenIdConstants.TokenEndpoint.ToString(), OpenIdConstants.ClientId,
+            var tokenEndpointClient = new TokenClient(_discoResponse.TokenEndpoint, OpenIdConstants.ClientId,
                 OpenIdConstants.ClientSecret, AuthenticationStyle.PostValues);
 
             var tokenResponse = await tokenEndpointClient.RequestAuthorizationCodeAsync(code, redirectUri);
 
-            var userInfoEndpointClient = new UserInfoClient(OpenIdConstants.UserInfoEndpoint.ToString());
+            var userInfoEndpointClient = new UserInfoClient(_discoResponse.UserInfoEndpoint);
             var userInfoResponse = await userInfoEndpointClient.GetAsync(tokenResponse.AccessToken);
 
             Console.WriteLine("AccessToken = {0}", tokenResponse.AccessToken);

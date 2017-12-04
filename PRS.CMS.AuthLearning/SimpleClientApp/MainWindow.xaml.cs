@@ -1,8 +1,9 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http;
+using System.Threading.Tasks;
+
 using IdentityModel.Client;
 
 namespace SimpleClientApp
@@ -12,24 +13,40 @@ namespace SimpleClientApp
     /// </summary>
     public partial class MainWindow : Window
     {
+        private DiscoveryResponse _discoResponse;
+
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private async void Button_Click_Browser(object sender, RoutedEventArgs e)
+        public async Task<DiscoveryResponse> GetDiscoInfo()
         {
-            var proxy = new OpenIdClientProxy();
-            var tokenResponse = await proxy.Authenticate();
-            tokenTextBlock.Text = tokenResponse.AccessToken;
-            DisplayTokenResponse(tokenResponse, OpenIdConstants.RootUri);
+            if (_discoResponse != null)
+            {
+                return _discoResponse;
+            }
+
+            var disco = new DiscoveryClient(OpenIdConstants.Authority.ToString());
+            _discoResponse = await disco.GetAsync();
+            return _discoResponse;
         }
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private async void Button_Click_Browser(object sender, RoutedEventArgs e)
         {
-            var connectRootUri = OpenIdConstants.RootUri;
+            var disco = await GetDiscoInfo();
+            var proxy = new OpenIdClientProxy(disco);
 
-            var client = new TokenClient(connectRootUri + "/token", OpenIdConstants.Client2Id, OpenIdConstants.ClientSecret);
+            var tokenResponse = await proxy.Authenticate();
+            tokenTextBlock.Text = tokenResponse.AccessToken;
+
+            await DisplayTokenResponse(tokenResponse, disco);
+        }
+
+        private async void Button_Click(object sender, RoutedEventArgs e)
+        {
+            var disco = await GetDiscoInfo();
+            var client = new TokenClient(disco.TokenEndpoint, OpenIdConstants.Client2Id, OpenIdConstants.ClientSecret);
             
             var userName = UserNameTextBox.Text;
             var password = PasswordTextBox.Text;
@@ -42,21 +59,22 @@ namespace SimpleClientApp
             var tokenResponse = client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile email offline_access").Result;
             tokenTextBlock.Text = tokenResponse.AccessToken;
 
-            DisplayTokenResponse(tokenResponse, connectRootUri);
+            await DisplayTokenResponse(tokenResponse, disco);
         }
 
-        private void Button_Click_WsFedServer(object sender, RoutedEventArgs e)
+        private async void Button_Click_WsFedServer(object sender, RoutedEventArgs e)
         {
             ServicePointManager.ServerCertificateValidationCallback = (o, certificate, chain, errors) => true;
-
             var handler = new HttpClientHandler
             {
                 UseDefaultCredentials = true,
             };
-            //PRS.CMS.AuthLearning.WsFedServer
-            var connectRootUri = new Uri("https://localhost:44302");
 
-            var client = new TokenClient(connectRootUri + "/windows/token", handler)
+            var authority = "https://localhost:44302/windows";
+
+            //PRS.CMS.AuthLearning.WsFedServer
+
+            var client = new TokenClient(authority + "/token", handler)
             {
                 ClientId = OpenIdConstants.Client2Id,
                 ClientSecret = OpenIdConstants.ClientSecret
@@ -64,19 +82,21 @@ namespace SimpleClientApp
 
             var tokenResponse = client.RequestCustomGrantAsync("windows", "openid profile offline_access").Result;
 
-            DisplayTokenResponse(tokenResponse, connectRootUri, handler);
+            await DisplayTokenResponse(tokenResponse, authority + "/userinfo", handler);
         }
 
-        private void Button_Click_WinAuth(object sender, RoutedEventArgs e)
+        private async void Button_Click_WinAuth(object sender, RoutedEventArgs e)
         {
             var handler = new HttpClientHandler
             {
                 UseDefaultCredentials = true
             };
-            //PRS.CMS.AuthLearning.WinAuth
-            var connectRootUri = new Uri("http://localhost:26712/token");
 
-            var client = new TokenClient(connectRootUri.ToString(), handler)
+            //PRS.CMS.AuthLearning.WinAuth
+            var disco = new DiscoveryClient("http://localhost:26712/", handler);
+            var discoResponse = await disco.GetAsync();
+
+            var client = new TokenClient(discoResponse.TokenEndpoint, handler)
             {
                 ClientId = OpenIdConstants.Client2Id,
                 ClientSecret = OpenIdConstants.ClientSecret
@@ -84,10 +104,15 @@ namespace SimpleClientApp
 
             var tokenResponse = client.RequestCustomGrantAsync("windows", "openid profile offline_access").Result;
 
-            DisplayTokenResponse(tokenResponse, connectRootUri, handler);
+            await DisplayTokenResponse(tokenResponse, discoResponse, handler);
         }
 
-        private static void DisplayTokenResponse(TokenResponse tokenResponse, Uri connectRootUri, HttpClientHandler handler = null)
+        private static async Task DisplayTokenResponse(TokenResponse tokenResponse, DiscoveryResponse disco, HttpClientHandler handler = null)
+        {
+            await DisplayTokenResponse(tokenResponse, disco.UserInfoEndpoint, handler);
+        }
+
+        private static async Task DisplayTokenResponse(TokenResponse tokenResponse, string userInfoEndpoint, HttpClientHandler handler = null)
         {
             if (tokenResponse == null || string.IsNullOrEmpty(tokenResponse.AccessToken))
             {
@@ -100,10 +125,10 @@ namespace SimpleClientApp
             // need to get the claims for the user because the Token doesn't contain any user info other than
             // giving us the ability to access APIs as that user
             var userInfoClient = handler == null
-                ? new UserInfoClient(connectRootUri + "/userinfo")
-                : new UserInfoClient(connectRootUri + "/userinfo", handler);
+                ? new UserInfoClient(userInfoEndpoint)
+                : new UserInfoClient(userInfoEndpoint, handler);
 
-            var userInfoResponse = userInfoClient.GetAsync(tokenResponse.AccessToken).Result;
+            var userInfoResponse = await userInfoClient.GetAsync(tokenResponse.AccessToken);
 
             // can look through Claims to see what info is in the Token returned
             var claims = userInfoResponse.Claims;

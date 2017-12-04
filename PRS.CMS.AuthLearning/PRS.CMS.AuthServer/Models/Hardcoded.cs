@@ -78,11 +78,6 @@ namespace PRS.CMS.AuthServer.Models
 
         public static IEnumerable<Scope> Scopes()
         {
-            /*return new [] {
-                new Scope(){
-                    
-                }
-            }*/
             return new[]
             {
                 StandardScopes.OpenId,
