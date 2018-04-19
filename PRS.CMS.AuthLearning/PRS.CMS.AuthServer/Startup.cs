@@ -1,11 +1,14 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+
 using IdentityServer3.Core.Configuration;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.Owin.Security.Notifications;
+using IdentityServer3.Core.Services;
+using IdentityServer3.Core.Services.InMemory;
 using Microsoft.Owin.Security.OpenIdConnect;
+
 using Owin;
+
 using PRS.CMS.AuthServer.Models;
+
 using Serilog;
 
 namespace PRS.CMS.AuthServer
@@ -23,8 +26,21 @@ namespace PRS.CMS.AuthServer
             {
                 var serviceFactory = new IdentityServerServiceFactory()
                     .UseInMemoryClients(Hardcoded.Clients())
-                    .UseInMemoryScopes(Hardcoded.Scopes())
-                    .UseInMemoryUsers(Hardcoded.Users());
+                    .UseInMemoryScopes(Hardcoded.Scopes());
+
+                // this will require storing of username/password somewhere
+                /*
+                 * serviceFactory.UseInMemoryUsers(Hardcoded.Users());
+                 */
+                
+                // this is to allow a new UserService to be created each time one is needed
+                /*
+                 * serviceFactory.Register(new Registration<List<InMemoryUser>>(Hardcoded.Users(), (string) null));
+                 * serviceFactory.UserService = new Registration<IUserService, UserService>((string) null);
+                 */
+
+                // this will register one with no dependencies that gets created each time
+                serviceFactory.UserService = new Registration<IUserService>(typeof(UserService));
 
                 var options = new IdentityServerOptions
                 {
@@ -50,27 +66,28 @@ namespace PRS.CMS.AuthServer
             {
                 Caption = "Azure",
                 SignInAsAuthenticationType = signInAsType,
-                ClientId = "729cfc16-2b7e-47ab-8a6d-63e71cfa813f",
-                //ClientSecret = "...",
+                ClientId = "9f62507c-99d8-45e3-bb34-e01b7cbd199f",
+                // this uses standard oauth/openid dance so it doesn't require the secret
+                //ClientSecret = "nWdHjtz7AhGjOpIew36mC/2OeL3aBtfCxEsQjfu3lIs=",
                 Authority = "https://login.microsoft.com/casemax.com",
                 // this doesn't need to be set in code but it does need to be set in the
                 // azure portal
                 //RedirectUri = "http://localhost:6159/AuthServer/identity/",
                 Notifications = new OpenIdConnectAuthenticationNotifications
                 {
-                    AuthenticationFailed = n =>
+                    AuthenticationFailed = async n =>
                     {
-                        return Task.FromResult(0);
+                        var msg = n.ProtocolMessage;
                     },
-                    AuthorizationCodeReceived = notification =>
+                    AuthorizationCodeReceived = async n =>
                     {
-                        return Task.FromResult(0);
+                        var msg = n.ProtocolMessage;
                     },
-                    MessageReceived = n =>
+                    MessageReceived = async n =>
                     {
-                        return Task.FromResult(0);
+                        var msg = n.ProtocolMessage;
                     },
-                    RedirectToIdentityProvider = notification =>
+                    RedirectToIdentityProvider = async notification =>
                     {
                         // The open id class can't deal with authorization uri which already contain '?'
                         // We need this work around to cover it in the request
@@ -80,16 +97,14 @@ namespace PRS.CMS.AuthServer
                         {
                             //context.ProtocolMessage.Parameters.Add("p", Settings.Default.B2CPolicy);
                         }
-
-                        return Task.FromResult(0);
                     },
-                    SecurityTokenReceived = n =>
+                    SecurityTokenReceived = async n =>
                     {
-                        return Task.FromResult(0);
+                        var msg = n.ProtocolMessage;
                     },
-                    SecurityTokenValidated = notification =>
+                    SecurityTokenValidated = async n =>
                     {
-                        return Task.FromResult(0);
+                        var msg = n.ProtocolMessage;
                     },
                 }
             };
