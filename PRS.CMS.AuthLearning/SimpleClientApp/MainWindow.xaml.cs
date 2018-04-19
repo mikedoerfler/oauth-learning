@@ -56,7 +56,7 @@ namespace SimpleClientApp
             // be done when the application getting the password from the user is TRUSTED.  Our
             // server should only allow ResourceOwner from known clients that we have written.
             // the offline_access is what gives us the ability to request a refresh token
-            var tokenResponse = client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile email offline_access").Result;
+            var tokenResponse = await client.RequestResourceOwnerPasswordAsync(userName, password, "openid profile email offline_access");
             tokenTextBlock.Text = tokenResponse.AccessToken;
 
             await DisplayTokenResponse(tokenResponse, disco);
