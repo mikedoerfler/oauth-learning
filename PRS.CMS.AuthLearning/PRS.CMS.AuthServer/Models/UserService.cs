@@ -1,28 +1,34 @@
 ﻿using System.Collections.Generic;
+using System.Security.Claims;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer3.Core;
 using IdentityServer3.Core.Extensions;
 using IdentityServer3.Core.Models;
+using IdentityServer3.Core.Services.Default;
 using IdentityServer3.Core.Services.InMemory;
 using PRS.CMS.IdentityModel;
 
 namespace PRS.CMS.AuthServer.Models
 {
-    public class UserService : InMemoryUserService
+    public class UserService : UserServiceBase
     {
-        public UserService() : base(new List<InMemoryUser>())
+        private readonly List<InMemoryUser> _users;
+
+        public UserService() : this(new List<InMemoryUser>())
         {
         }
 
-        public UserService(List<InMemoryUser> users) : base(users)
+        public UserService(List<InMemoryUser> users)
         {
+            _users = users;
         }
 
         public override async Task AuthenticateLocalAsync(LocalAuthenticationContext context)
         {
-            // this is the authentication done when a username/password is supplied
-            //await base.AuthenticateLocalAsync(context);
+            // this is the authentication done when a username/password is supplied - that could be through a resource owner
+            // connection or by typing in the displayed UI
+
             var discoResponse = await AzureDiscoveryResponse.GetAsync("https://login.microsoftonline.com/b5af619b-e5a7-4290-813b-fd2ea1ede0bf");
             var proxy = new AzureProxy(discoResponse, "9f62507c-99d8-45e3-bb34-e01b7cbd199f")
             {
@@ -38,33 +44,56 @@ namespace PRS.CMS.AuthServer.Models
             else
             {
                 var principal = tokenResponse.ToClaimsPrincipal(Constants.BuiltInIdentityProvider);
-                context.AuthenticateResult = new AuthenticateResult(principal.GetSubjectId(), principal.GetName(),
-                    principal.Claims, "idsrv", "pwd");
+
+                var subjectId = principal.GetSubjectId();
+                var username = principal.GetName();
+
+                var user = _users.FirstOrDefault(u => u.Subject == subjectId);
+                if (user == null)
+                {
+                    user = new InMemoryUser
+                    {
+                        Subject = subjectId,
+                        Username = username,
+                        Enabled = true
+                    };
+                    _users.Add(user);
+                }
+
+                user.Claims = principal.Claims;
+                context.AuthenticateResult = new AuthenticateResult(user.Subject, user.Username, user.Claims, "idsrv", "pwd");
+
             }
         }
 
-        public override async Task IsActiveAsync(IsActiveContext context)
+        public override Task IsActiveAsync(IsActiveContext context)
         {
-            await base.IsActiveAsync(context);
             // this would need to check if the Subject represented an active user
             context.IsActive = true;
+            return Task.FromResult(0);
         }
 
-        public override async Task GetProfileDataAsync(ProfileDataRequestContext context)
+        public override Task GetProfileDataAsync(ProfileDataRequestContext context)
         {
-            await base.GetProfileDataAsync(context);
-            var claims = context.AllClaimsRequested;
-        }
+            var user = _users.Single(u => u.Subject == context.Subject.GetSubjectId());
+            var claims = user.Claims.ToList();
 
-        protected override string GetDisplayName(InMemoryUser user)
-        {
-            var name = base.GetDisplayName(user);
-            return name;
+            if (claims.FirstOrDefault(c=>c.Type == "sub") == null)
+            {
+                var subClaim = new Claim("sub", user.Subject);
+                claims.Add(subClaim);
+            };
+
+            context.IssuedClaims = claims;
+            return Task.FromResult(0);
         }
 
         public override async Task PreAuthenticateAsync(PreAuthenticationContext context)
         {
-            var msg = context.SignInMessage;
+            // checking to see if they will go straight to Azure by doing this
+            // this has to match with the Options.AuthenticationType
+            context.SignInMessage.IdP = "azure";
+
             await base.PreAuthenticateAsync(context);
             var msg2 = context.SignInMessage;
         }
@@ -76,13 +105,15 @@ namespace PRS.CMS.AuthServer.Models
             var msg2 = context.SignInMessage;
         }
 
-        public override async Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
+        public override Task AuthenticateExternalAsync(ExternalAuthenticationContext context)
         {
-            var msg = context.SignInMessage;
-            await base.AuthenticateExternalAsync(context);
+            // this is the method called after an external IdP has been used to get how that user
+            // is represented on that system
+            var identity = context.ExternalIdentity;
 
             var result = context.AuthenticateResult;
-            var msg2 = context.SignInMessage;
+
+            return Task.FromResult(0);
         }
     }
 }

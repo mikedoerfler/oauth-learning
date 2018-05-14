@@ -40,7 +40,10 @@ namespace PRS.CMS.AuthServer
                  */
 
                 // this will register one with no dependencies that gets created each time
-                serviceFactory.UserService = new Registration<IUserService>(typeof(UserService));
+                //serviceFactory.UserService = new Registration<IUserService>(typeof(UserService));
+
+                // this will creat a single UserService to be shared at runtime - better make it thread safe
+                serviceFactory.UserService = new Registration<IUserService>(new UserService());
 
                 var options = new IdentityServerOptions
                 {
@@ -64,6 +67,7 @@ namespace PRS.CMS.AuthServer
         {
             var openIdOptions = new OpenIdConnectAuthenticationOptions
             {
+                AuthenticationType = "azure",
                 Caption = "Azure",
                 SignInAsAuthenticationType = signInAsType,
                 ClientId = "9f62507c-99d8-45e3-bb34-e01b7cbd199f",
